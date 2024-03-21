@@ -1,0 +1,32 @@
+{
+  "name": "blogapi",
+  "version": "1.0.0",
+  "description": "This is an API only backend for my blog.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "prettier": "npx prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Mahyar-98/blogAPI.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mahyar-98/blogAPI/issues"
+  },
+  "homepage": "https://github.com/Mahyar-98/blogAPI#readme",
+  "dependencies": {
+    "debug": "^4.3.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "express-async-handler": "^1.2.0",
+    "express-validator": "^7.0.1",
+    "http-errors": "^2.0.0",
+    "mongoose": "^8.2.2",
+    "morgan": "^1.10.0",
+    "prettier": "^3.2.5"
+  }
+}
