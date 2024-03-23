@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 
 const PostSchema = new Schema(
   {
-    title: { type: String, uniqque: true, required: true },
+    title: { type: String, unique: true, required: true },
     body: { type: String, required: true },
-    isPublished: { type: Boolean, required: true },
-    isDeleted: { type: Boolean, required: true },
+    isPublished: { type: Boolean, default: false, required: true },
+    isDeleted: { type: Boolean, default: false, required: true },
+    title_url: { type: String, unique: true, required: true },
     user: { type: Schema.Types.ObjectId, required: true },
     tags: {
       type: [{ type: Schema.Types.ObjectId, ref: "Tag" }],

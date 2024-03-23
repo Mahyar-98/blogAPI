@@ -22,6 +22,17 @@ app.use(morgan("dev"));
 // Require the models
 
 // Require the routers
+const usersRouter = require("./routes/users");
+const postsRouter = require("./routes/posts");
+const commentsRouter = require("./routes/comments");
+const tagsRouter = require("./routes/tags");
+
+// Use the routers
+app.use("/", (req, res) => res.redirect("/posts"));
+app.use("/users", usersRouter);
+app.use("/posts", postsRouter);
+app.use("/posts/:postTitle/comments", commentsRouter);
+app.use("/tags", tagsRouter);
 
 // Use http-errors middleware to generate a 404 error in case no route matches
 app.use((req, res, next) => {
