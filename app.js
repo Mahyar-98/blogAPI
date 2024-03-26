@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const createError = require("http-errors");
+const debug = require("debug")("http");
 const debug_db = require("debug")("database");
 const morgan = require("morgan");
 const path = require("path");
@@ -22,16 +23,18 @@ app.use(morgan("dev"));
 // Require the models
 
 // Require the routers
+const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/users");
 const postsRouter = require("./routes/posts");
 const commentsRouter = require("./routes/comments");
 const tagsRouter = require("./routes/tags");
 
 // Use the routers
-app.use("/", (req, res) => res.redirect("/posts"));
+app.get("/", (req, res) => res.redirect("/posts"));
+app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/posts", postsRouter);
-app.use("/posts/:postTitle/comments", commentsRouter);
+app.use("/posts", commentsRouter);
 app.use("/tags", tagsRouter);
 
 // Use http-errors middleware to generate a 404 error in case no route matches
@@ -44,7 +47,7 @@ app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
   res.status(err.status || 500);
-  res.render("error", { title: "Error" });
+  res.json({ error: err.message });
 });
 
 // Listen for HTTP requests

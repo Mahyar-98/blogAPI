@@ -1,14 +1,14 @@
+const Comment = require("../models/comment");
+const findPost = require("../middleware/findPost");
+const findComment = require("../middleware/findComment");
+const verifyToken = require("../middleware/verifyToken");
 const asyncHandler = require("express-async-handler");
 const debug_comment = require("debug")("comment");
-const Comment = require("../models/comment");
 const { validationResult } = require("express-validator");
-const validateComment = require("../middleware/validateComment");
-
-// Finds the associated post and adds it to req.post
-const findPost = require("../middleware/findPost"); 
-
-// Finds the associated comment and adds it to req.comment
-const findComment = require("../middleware/findComment");
+const {
+  validateCommentCreate,
+  validateCommentUpdate,
+} = require("../middleware/validateComment");
 
 const deleteNestedComments = async (parentId) => {
   const childComments = await Comment.find({ parentComment: parentId });
@@ -23,7 +23,7 @@ exports.comments_read = [
   asyncHandler(async (req, res, next) => {
     const comments = await Comment.find({ post: req.post.id });
     if (comments.length === 0) {
-      res.json({ message: "This post has no comments" });
+      return res.json({ message: "This post has no comments" });
     }
     res.json(comments);
   }),
@@ -31,20 +31,17 @@ exports.comments_read = [
 
 exports.comment_create = [
   findPost,
-  validateComment,
+  validateCommentCreate,
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-    }
-    let userId = null;
-    if (req.user) {
-      userId = req.user.id;
+      return res.status(400).json({ errors: errors.array() });
     }
     const comment = new Comment({
       body: req.body.body,
-      isApproved: userId ? true : false,
-      user: userId,
+      name: req.body.name,
+      email: req.body.email,
+      website: req.body.website ? req.body.website : null,
       post: req.post.id,
       parentComment: null,
     });
@@ -64,20 +61,17 @@ exports.comment_read = [
 exports.child_comment_create = [
   findPost,
   findComment,
-  validateComment,
+  validateCommentCreate,
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });
     }
-    let userId = null;
-    if (req.user) {
-      userId = req.user.id;
-    }
     const comment = new Comment({
       body: req.body.body,
-      isApproved: userId ? true : false,
-      user: userId,
+      name: req.body.name,
+      email: req.body.email,
+      website: req.body.website ? req.body.website : null,
       post: req.post.id,
       parentComment: req.comment.id,
     });
@@ -88,45 +82,46 @@ exports.child_comment_create = [
 
 // check if you can replace the first 4 lines with findComment and save req.comment to DB
 exports.comment_update = [
+  verifyToken,
   findPost,
-  validateComment,
+  findComment,
+  validateCommentUpdate,
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-    };
-    const comment = await Comment.findOne({ _id: req.params.commentId });
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
+      return res.status(400).json({ errors: errors.array() });
     }
-    comment.body = req.body.body;
-    comment.isApproved = req.body.isApproved;
-    await comment.save();
+    if (req.body.body) {
+      req.comment.body = req.body.body;
+    }
+    if (req.body.isApproved) {
+      req.comment.isApproved = req.body.isApproved;
+    }
+    await req.comment.save();
     res.json({ message: "Comment updated successfully" });
   }),
 ];
 
-// check if you can replace the first 4 lines with findComment and save req.comment to DB
 exports.comment_delete = [
+  verifyToken,
   findPost,
+  findComment,
   asyncHandler(async (req, res, next) => {
-    const comment = await Comment.findOne({ _id: req.params.commentId });
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
-    }
-    if (comment.post.toString() !== req.post.id.toString()) {
+    if (req.comment.post.toString() !== req.post.id.toString()) {
       return res
         .status(400)
         .json({ error: "Comment does not belong to the post" });
     }
-    comment.isDeleted = true;
-    await comment.save();
+    req.comment.isDeleted = true;
+    await req.comment.save();
     try {
-      await deleteNestedComments(comment.id);
-      res.json({ message: "Comment and its nested comments deleted successfully" });
-    } catch(error) {
+      await deleteNestedComments(req.comment.id);
+    } catch (error) {
       debug_comment("Error deleting nested comments:", error);
-      res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" });
     }
+    res.json({
+      message: "Comment and its nested comments deleted successfully",
+    });
   }),
 ];

@@ -8,7 +8,7 @@ const PostSchema = new Schema(
     isPublished: { type: Boolean, default: false, required: true },
     isDeleted: { type: Boolean, default: false, required: true },
     title_url: { type: String, unique: true, required: true },
-    user: { type: Schema.Types.ObjectId, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     tags: {
       type: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
       required: true,

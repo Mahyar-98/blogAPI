@@ -4,9 +4,11 @@ const Schema = mongoose.Schema;
 const CommentSchema = new Schema(
   {
     body: { type: String, required: true },
-    isApproved: { type: Boolean, required: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    website: { type: String },
+    isApproved: { type: Boolean, default: true, required: true },
     isDeleted: { type: Boolean, default: false, required: true },
-    user: { type: Schema.Types.ObjectId, ref: "User" },
     post: { type: Schema.Types.ObjectId, ref: "Post", required: true },
     parentComment: { type: Schema.Types.ObjectId, ref: "Comment" },
   },
