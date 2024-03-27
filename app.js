@@ -1,10 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const createError = require("http-errors");
-const debug = require("debug")("http");
 const debug_db = require("debug")("database");
 const morgan = require("morgan");
-const path = require("path");
+const compression = require("compression");
+const helmet = require("helmet");
+const RateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 // Declare the app variable
@@ -20,7 +21,17 @@ app.use(express.json());
 // Use morgan as HTTP logger to show the HTTP method and route of each request
 app.use(morgan("dev"));
 
-// Require the models
+// Prepare the app for production
+app.use(compression());
+app.use(helmet.contentSecurityPolicy({
+    directives: {"script-src": ["'self'"]},
+  }),
+);
+const limiter = RateLimit({
+  windowMS: 1*60*1000,
+  max: 20,
+});
+app.use(limiter);
 
 // Require the routers
 const authRouter = require("./routes/auth");
