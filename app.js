@@ -6,7 +6,9 @@ const morgan = require("morgan");
 const compression = require("compression");
 const helmet = require("helmet");
 const RateLimit = require("express-rate-limit");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
+const cors = require("cors");
 
 // Declare the app variable
 const app = express();
@@ -29,9 +31,17 @@ app.use(helmet.contentSecurityPolicy({
 );
 const limiter = RateLimit({
   windowMS: 1*60*1000,
-  max: 20,
+  max: 30,
 });
 app.use(limiter);
+
+// Enable CORS
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 600,
+}))
 
 // Require the routers
 const authRouter = require("./routes/auth");
@@ -47,6 +57,30 @@ app.use("/users", usersRouter);
 app.use("/posts", postsRouter);
 app.use("/posts", commentsRouter);
 app.use("/tags", tagsRouter);
+app.post("/contact", (req, res) => {
+  const { name, email, message } = req.body;
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: "mahyar.erfanian1998@gmail.com",
+      pass: process.env.EMAIL_PASSWORD,
+    }
+  })
+  const mailOptions = {
+    from: email,
+    to: "mahyar.erfanian1998@gmail.com",
+    subject: `New message from my portfolio website's contact form`,
+    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`  
+  }
+
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Error sending email" });
+    }
+    res.json({ message: "Email sent successfully"})
+  })
+})
 
 // Use http-errors middleware to generate a 404 error in case no route matches
 app.use((req, res, next) => {

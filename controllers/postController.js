@@ -12,7 +12,7 @@ const {
 } = require("../middleware/validatePost");
 
 exports.posts_read = asyncHandler(async (req, res, next) => {
-  const posts = await Post.find().populate("tags");
+  const posts = await Post.find().sort({ createdAt: -1 });
   if (posts.length === 0) {
     return res.json({ message: "There are no posts" });
   }
