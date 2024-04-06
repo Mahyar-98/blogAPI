@@ -14,9 +14,7 @@ const cors = require("cors");
 const app = express();
 
 // Connect to the MongoDB database
-mongoose
-  .connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-  .catch((err) => debug_db(err));
+mongoose.connect(process.env.MONGODB_URL).catch((err) => debug_db(err));
 
 // Use the body parser middleware to be able to parse the body of HTTP POST requests
 app.use(express.urlencoded({ extended: false }));
@@ -27,26 +25,23 @@ app.use(morgan("dev"));
 
 // Prepare the app for production
 app.use(compression());
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: { "script-src": ["'self'"] },
+app.use(helmet.contentSecurityPolicy({
+    directives: {"script-src": ["'self'"]},
   }),
 );
 const limiter = RateLimit({
-  windowMS: 1 * 60 * 1000,
+  windowMS: 1*60*1000,
   max: 30,
 });
 app.use(limiter);
 
 // Enable CORS
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    maxAge: 600,
-  }),
-);
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 600,
+}))
 
 // Require the routers
 const authRouter = require("./routes/auth");
@@ -69,23 +64,23 @@ app.post("/contact", (req, res) => {
     auth: {
       user: "mahyar.erfanian1998@gmail.com",
       pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+    }
+  })
   const mailOptions = {
     from: email,
     to: "mahyar.erfanian1998@gmail.com",
     subject: `New message from my portfolio website's contact form`,
-    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
-  };
+    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`  
+  }
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ error: "Error sending email" });
     }
-    res.json({ message: "Email sent successfully" });
-  });
-});
+    res.json({ message: "Email sent successfully"})
+  })
+})
 
 // Use http-errors middleware to generate a 404 error in case no route matches
 app.use((req, res, next) => {
@@ -102,6 +97,4 @@ app.use((err, req, res, next) => {
 
 // Listen for HTTP requests
 const port = process.env.PORT || 3000;
-app.listen(port, "0.0.0.0", () =>
-  console.log(`Server listening on port ${port}...`),
-);
+app.listen(port, "0.0.0.0", () => console.log(`Server listening on port ${port}...`));
