@@ -15,7 +15,7 @@ const app = express();
 
 // Connect to the MongoDB database
 mongoose
-  .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => debug_db(err));
 
 // Use the body parser middleware to be able to parse the body of HTTP POST requests
