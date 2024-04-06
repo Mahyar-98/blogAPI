@@ -14,7 +14,7 @@ const cors = require("cors");
 const app = express();
 
 // Connect to the MongoDB database
-mongoose.connect(process.env.MONGODB_URL).catch((err) => debug_db(err));
+mongoose.connect(process.env.MONGODB_URL).then(() => console.log("connected to database")).catch((err) => console.log(err));
 
 // Use the body parser middleware to be able to parse the body of HTTP POST requests
 app.use(express.urlencoded({ extended: false }));
