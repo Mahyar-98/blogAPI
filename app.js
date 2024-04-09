@@ -36,9 +36,10 @@ const limiter = RateLimit({
 app.use(limiter);
 
 // Enable CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
 app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST"],
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT"],
   allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 600,
 }))

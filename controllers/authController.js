@@ -7,7 +7,7 @@ const debug_user = require("debug")("user");
 exports.login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    res
+    return res
       .status(401)
       .json({ message: "No user found with the provided email address" });
   }
@@ -16,7 +16,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     user.password,
   );
   if (!isValidPassword) {
-    res.status(401).json({ message: "password is incorrect" });
+    return res.status(401).json({ message: "password is incorrect" });
   }
   const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY, {
     expiresIn: "1h",
